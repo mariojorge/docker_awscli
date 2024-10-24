@@ -5,4 +5,3 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock  # Monta o socket do Docker
     command: [ "sh", "-c", "dockerd & sleep 10 && docker info && tail -f /dev/null" ]  # Inicia o Docker daemon e mantém o container ativo
-    #command: tail -f /dev/null
