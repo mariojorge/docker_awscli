@@ -1,0 +1,30 @@
+image: mariojorge/awscli
+
+pipelines:
+  custom:
+    ecr-manual_build_and_push:
+      # CONSTRUIR E ENVIAR IMAGEM
+      - step:
+          name: Build and Push Docker Image to Amazon ECR
+          services:
+            - docker
+          script:
+            - echo "Construindo e enviando a imagem Docker para o Amazon ECR"
+            - dockerd &
+            - sleep 10
+            - docker info
+            - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ECR_REGISTRY_URL
+            - docker build -t $AWS_ECR_REPOSITORY .
+            - docker tag $AWS_ECR_REPOSITORY:latest $AWS_ECR_REGISTRY_URL/$AWS_ECR_REPOSITORY:latest
+            - docker push $AWS_ECR_REGISTRY_URL/$AWS_ECR_REPOSITORY:latest
+      # ATUALIZAR SERVICO ECS
+      - step:
+          name: Update ECS Service
+          script:
+            - echo "Atualizando o serviço ECS"
+            - aws ecs update-service --cluster $ECS_CLUSTER_NAME --service gerencial-maracanau-service --force-new-deployment
+
+definitions:
+  services:
+    docker:
+      memory: 3072
